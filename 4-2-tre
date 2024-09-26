@@ -1,0 +1,37 @@
+import RPi.GPIO as GPIO
+import time
+
+dac = [26, 19, 13, 6, 5, 21, 20, 16]
+
+GPIO.setmode(GPIO.BCM)
+GPIO.setup(dac, GPIO.OUT)
+
+def dec2bin(decimal):
+    return [int(bit) for bit in bin(decimal)[2:].zfill(8)]
+
+try:
+    # Получение периода от пользователя
+    period_str = input("Введите период треугольного сигнала (в секундах): ")
+    try:
+        period = float(period_str)
+    except ValueError:
+        print("Ошибка: Введите числовое значение для периода.")
+        exit()
+
+    # Бесконечный цикл для генерации треугольного сигнала
+    while True:
+        # Восходящая часть треугольника
+        for value in range(256):
+            binary = dec2bin(value)
+            GPIO.output(dac, binary)
+            time.sleep(period / 512)
+
+        # Нисходящая часть треугольника
+        for value in range(255, -1, -1):
+            binary = dec2bin(value)
+            GPIO.output(dac, binary)
+            time.sleep(period / 512)
+
+finally:
+    GPIO.output(dac, 0)
+    GPIO.cleanup()
