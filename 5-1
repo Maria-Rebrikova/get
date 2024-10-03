@@ -1,0 +1,34 @@
+import RPi.GPIO as g
+import time
+g.setmode(g.BCM)
+dac = [8,11,7,1,0,5,12,6]
+comp = 14
+troyka = 13
+maxvoltage = 3.3
+bits = 8
+levels = 2**8
+g.setup(dac, g.OUT)
+g.setup(troyka, g.OUT, initial = g.HIGH)
+g.setup(comp, g.IN)
+
+def dec2binary(a):
+return [int(elem) for elem in bin(a)[2:].zfill(8)]
+
+def num2dac(value):
+signal = dec2binary(value)
+g.output(dac, signal)
+return signal
+
+try:
+while True:
+for value in range(256):
+time.sleep(0.0005)
+signal = num2dac(value)
+voltage = value / levels * maxvoltage
+compValue = g.input(comp)
+if compValue == 1:
+print("ADC value = {:^3} {}, input voltage = {:.2f}".format(value, signal, voltage) )
+finally:
+g.output(dac, g.LOW)
+g.cleanup(dac)
+print("sdelano")
